@@ -1,6 +1,14 @@
 #include "output.h"
 #include "lgdt.h"
 
+struct idt_entry{
+	unsigned int offset_high;
+	unsigned char stuff;
+	unsigned char more_stuff;
+	unsigned int segment_selector;
+	unsigned int offset_low;
+} __attribute__((packed));
+
 int kmain(){
 	configure_serial();
 	char *output = "Sup Terri derp derp derp";
