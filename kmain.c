@@ -1,5 +1,6 @@
 #include "output.h"
 #include "lgdt.h"
+#include "pic.h"
 
 struct idt_entry{
 	unsigned int offset_high;
