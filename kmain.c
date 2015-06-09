@@ -1,6 +1,8 @@
 #include "output.h"
 #include "lgdt.h"
 #include "pic.h"
+#include "cpu_details.h"
+#include "cpuid.h"
 
 struct idt_entry{
 	unsigned int offset_high;
@@ -12,9 +14,22 @@ struct idt_entry{
 
 int kmain(){
 	configure_serial();
-	char *output = "Sup Terri derp derp derp";
-	print(output,24);
+	if(cpuid_support()){
+		print("CPUID is supported! ");
+		unsigned long cpu = detect_cpu();
+		if(cpu == INTEL_MAGIC_CODE){
+			print("Intel CPU!");
+			intel_list_features();
+		} else if (cpu == AMD_MAGIC_CODE) {
+			print("AMD CPU!");
+			amd_list_features();
+		} else {
+			print("CPU make is not supported");
+		}
+	} else {
+		print("CPUID is not supported, get a new CPU peasent.");
+	}
 	char *debug = "Finished - now looping forever :(";
-	puts(DEBUG, debug,31);
+	puts(DEBUG, debug);
 	return 0;
 }

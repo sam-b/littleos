@@ -4,8 +4,8 @@
 #define STDOUT 	0
 #define DEBUG	1
 
-void print(char *,int);
-void puts(unsigned short, char *, int);
+void print(char *);
+void puts(unsigned short, char *);
 void configure_serial();
 
 #endif

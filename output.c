@@ -1,5 +1,6 @@
 #include "output.h"
 #include "io.h"
+#include "string.h"
 
 /* The Output color values */
 #define FB_BLACK				0
@@ -49,16 +50,16 @@
 #define SERIAL_LINE_ENABLE_DLAB         0x80
 
 void fb_write_cell(unsigned int, char, unsigned char, unsigned char);
-void fb_move_cursor(unsigned short);
+void fb_move_cursor(void);
 int fb_write(char *,unsigned int);
-int serial_write(char *, unsigned int);
+int serial_write(char *);
 int serial_is_transmit_fifo_empty(unsigned int);
 void serial_configure_modem(unsigned short);
 void serial_configure_baud_rate(unsigned short, unsigned short);
 void serial_configure_line(unsigned short);
 void serial_configure_buffer(unsigned short);
 void serial_write_char(char);
-
+unsigned short cursor_pos(void);
 /** fb_write_cell:
  *  Writes a character with the given foreground and background to position i
  *  in the framebuffer.
@@ -69,20 +70,23 @@ void serial_write_char(char);
  *  @param bg The background color
  */
 
-void print(char * buf,int len){
-	fb_write(buf,len);
+static unsigned short col = 0;
+static unsigned short row = 0;
+
+void print(char * buf){
+	fb_write(buf,strlen(buf));
 }
 
-void puts(unsigned short target, char * buf, int len){
+void puts(unsigned short target, char * buf){
 	switch(target){
 		case 0:
-			print(buf,len);
+			print(buf);
 			break;
 		case 1:
-			serial_write(buf,len);
+			serial_write(buf);
 			break;
 		default:
-			print(buf,len);
+			print(buf);
 	}
 }
 
@@ -95,14 +99,22 @@ void fb_write_cell(unsigned int i, char c, unsigned char fg, unsigned char bg)
 
 int fb_write(char *buf, unsigned int len){
 	unsigned int i;
+    unsigned short pos = cursor_pos();
 	for(i = 0; i< len; i++){
-		fb_write_cell(2*i,buf[i],FB_BLACK,FB_GREEN);
+		fb_write_cell(pos+(2*i),buf[i],FB_BLACK,FB_GREEN);
 	}
-	fb_move_cursor((short) len);
+    if(col + (short) 2 * len > 80){
+        row++;
+        col = (col + (short) 2 * len) % 80;
+    } else {
+        col += (short) 2 * len;
+    }
+	fb_move_cursor();
 	return len;
 }
 
-int serial_write(char *buf, unsigned int len){
+int serial_write(char *buf){
+    unsigned int len = strlen(buf);
 	unsigned int i;
 	for(i = 0;i < len;i++){
         serial_write_char(buf[i]);
@@ -116,13 +128,18 @@ void serial_write_char(char a) {
    outb(SERIAL_COM1_BASE,a);
 }
 
+unsigned short cursor_pos(){
+    return (row * 80) + col;
+}
+
 /** fb_move_cursor:
  *  Moves the cursor of the framebuffer to the given position
  *
  *  @param pos The new position of the cursor
  */
-void fb_move_cursor(unsigned short pos)
+void fb_move_cursor()
 {
+    unsigned short pos = cursor_pos() / 2;
     outb(FB_COMMAND_PORT, FB_HIGH_BYTE_COMMAND);
     outb(FB_DATA_PORT,    ((pos >> 8) & 0x00FF));
     outb(FB_COMMAND_PORT, FB_LOW_BYTE_COMMAND);
