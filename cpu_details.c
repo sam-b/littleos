@@ -34,6 +34,7 @@ void intel_list_features(){
 		default:
 			print("Unknown CPU type!");
 	}
+	print(". "); //One day a \n will go here...but not today :(
 	print("Family: ");
 	unsigned short family = intel_cpu_family();
 	switch(family){
@@ -55,6 +56,7 @@ void intel_list_features(){
 		default:
 			print("Unrecognised CPU Family!");
 	}
+	print(". "); //One day a \n will go here...but not today :(
 	print("Model: ");
 	unsigned short model = intel_cpu_model();
 	switch(family){
@@ -131,6 +133,7 @@ void intel_list_features(){
 		case 15:
 			break;
 	}
+	print(". "); //One day a \n will go here...but not today :(
 	unsigned short stepping = intel_cpu_stepping();
 	if(stepping){
 		print("Stepping read...can't print numbers yet :( ");
